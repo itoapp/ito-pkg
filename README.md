@@ -16,11 +16,13 @@ Scaffold a new plugin project. Supported types are `manga`, `anime`, and `novel`
 
 ```bash
 ito-pkg new <plugin-name> --type <type>
+# Or use the short flag
+ito-pkg new <plugin-name> -t <type>
 ```
 
 Example:
 ```bash
-ito-pkg new my-manga-source --type manga
+ito-pkg new my-manga-source -t manga
 ```
 
 This creates a new directory with:

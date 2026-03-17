@@ -48,9 +48,10 @@ pub enum Commands {
     /// Scaffold a new plugin
     New {
         /// Name of the plugin project (e.g. 'my-novel-plugin')
+        #[arg(required = true)]
         name: String,
         /// Type of the plugin: manga, anime, or novel
-        #[arg(short, long, default_value = "manga")]
+        #[arg(short = 't', long = "type", default_value = "manga")]
         plugin_type: String,
     },
 }
