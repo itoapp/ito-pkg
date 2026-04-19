@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String) -> Result<()> {
+pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, description: String) -> Result<()> {
     if !output.exists() {
         std::fs::create_dir_all(&output).context("Failed to create output directory")?;
     }
@@ -93,7 +93,7 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String) ->
     let index = RepoIndex {
         repo_name: name,
         repo_url: url,
-        description: "Official verified plugins for Ito.".to_string(),
+        description,
         packages: repo_packages,
     };
 

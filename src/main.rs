@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Pack { path } => pack::pack_plugin(path),
         Commands::Verify { path } => verify::verify_plugin(path),
-        Commands::Repo { input, output, name, url } => repo::build_repo(input, output, name, url),
+        Commands::Repo { input, output, name, url, description } => repo::build_repo(input, output, name, url, description),
         Commands::Serve { path, port } => serve::serve_repo(path, port),
         Commands::New { name, plugin_type } => new::scaffold_plugin(name, plugin_type),
     }

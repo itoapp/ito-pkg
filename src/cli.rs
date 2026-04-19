@@ -35,6 +35,9 @@ pub enum Commands {
         /// URL of the repository
         #[arg(long)]
         url: String,
+        /// Description of the repository
+        #[arg(long, default_value = "Community sourced and maintained plugins for Ito.")]
+        description: String,
     },
     /// Serve a directory over HTTP (for dev usage)
     Serve {
