@@ -7,7 +7,7 @@ use std::process::Command;
 #[folder = "templates/"]
 struct Assets;
 
-pub fn scaffold_plugin(name: String, plugin_type: String) -> Result<()> {
+pub fn scaffold_plugin(name: &str, plugin_type: &str) -> Result<()> {
     let valid_types = ["manga", "anime", "novel"];
     let plugin_type = plugin_type.to_lowercase();
 
@@ -15,7 +15,7 @@ pub fn scaffold_plugin(name: String, plugin_type: String) -> Result<()> {
         bail!("Invalid plugin type '{}'. Valid types are: manga, anime, novel.", plugin_type);
     }
 
-    let project_dir = std::env::current_dir()?.join(&name);
+    let project_dir = std::env::current_dir().context("Failed to get current directory")?.join(name);
 
     if project_dir.exists() {
         bail!("Directory '{}' already exists.", name);
@@ -33,11 +33,11 @@ pub fn scaffold_plugin(name: String, plugin_type: String) -> Result<()> {
     }
 
     // Use cargo to create a base lib project
-    println!("Scaffolding {} plugin: {}...", plugin_type, name);
+    tracing::info!("Scaffolding {} plugin: {}...", plugin_type, name);
     let status = Command::new("cargo")
         .arg("new")
         .arg("--lib")
-        .arg(&name)
+        .arg(name)
         .status()
         .context("Failed to run cargo new")?;
 
@@ -77,10 +77,8 @@ pub fn scaffold_plugin(name: String, plugin_type: String) -> Result<()> {
     std::fs::write(project_dir.join("src/lib.rs"), lib_rs_rendered)
         .context("Failed to write src/lib.rs")?;
 
-    println!("Plugin {} scaffolded successfully at {:?}", name, project_dir);
-    println!("\nNext steps:");
-    println!("  cd {}", name);
-    println!("  ito-pkg pack");
+    tracing::info!("Plugin {} scaffolded successfully at {:?}", name, project_dir);
+    tracing::info!("\nNext steps:\n  cd {}\n  ito-pkg pack", name);
 
     Ok(())
 }

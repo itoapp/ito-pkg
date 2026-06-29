@@ -57,7 +57,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_plugin_manifest_deserialization() {
+    fn test_plugin_manifest_deserialization() -> Result<(), serde_json::Error> {
         let json = r#"{
             "id": "com.example.plugin",
             "name": "Example Plugin",
@@ -67,10 +67,11 @@ mod tests {
             "author": "Me"
         }"#;
 
-        let manifest: PluginManifest = serde_json::from_str(json).unwrap();
+        let manifest: PluginManifest = serde_json::from_str(json)?;
         assert_eq!(manifest.id, "com.example.plugin");
         assert_eq!(manifest.name, "Example Plugin");
         assert_eq!(manifest.plugin_type, "manga");
         assert_eq!(manifest.author, Some("Me".to_string()));
+        Ok(())
     }
 }

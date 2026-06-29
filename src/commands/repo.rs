@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, description: String) -> Result<()> {
+pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, description: &str) -> Result<()> {
     if !output.exists() {
         std::fs::create_dir_all(&output).context("Failed to create output directory")?;
     }
@@ -22,8 +22,8 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, de
         let entry = entry.context("Failed to read directory entry")?;
         let path = entry.path();
 
-        if path.extension().map_or(false, |ext| ext == "ito") {
-            println!("Processing {:?}", path);
+        if path.extension().is_some_and(|ext| ext == "ito") {
+            tracing::info!("Processing {:?}", path);
 
             let mut file = File::open(&path).context("Failed to open .ito file")?;
             let mut buffer = Vec::new();
@@ -40,7 +40,7 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, de
             let mut archive = match zip::ZipArchive::new(file_for_zip) {
                 Ok(a) => a,
                 Err(_) => {
-                    eprintln!("Warning: Could not read {:?} as ZIP.", path);
+                    tracing::warn!("Could not read {:?} as ZIP.", path);
                     continue;
                 }
             };
@@ -49,7 +49,7 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, de
                 let mut manifest_file = match archive.by_name("manifest.json") {
                     Ok(f) => f,
                     Err(_) => {
-                        eprintln!("Warning: manifest.json not found in {:?}", path);
+                        tracing::warn!("manifest.json not found in {:?}", path);
                         continue;
                     }
                 };
@@ -58,7 +58,7 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, de
                 match serde_json::from_str(&s) {
                     Ok(m) => m,
                     Err(e) => {
-                        eprintln!("Warning: Invalid manifest in {:?}: {}", path, e);
+                        tracing::warn!("Invalid manifest in {:?}: {}", path, e);
                         continue;
                     }
                 }
@@ -91,9 +91,9 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, de
     }
 
     let index = RepoIndex {
-        repo_name: name,
-        repo_url: url,
-        description,
+        repo_name: name.to_string(),
+        repo_url: url.to_string(),
+        description: description.to_string(),
         packages: repo_packages,
     };
 
@@ -107,6 +107,6 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: String, url: String, de
     let min_index_json = serde_json::to_string(&index).context("Failed to serialize min index")?;
     min_index_file.write_all(min_index_json.as_bytes()).context("Failed to write index.min.json")?;
 
-    println!("Repository built successfully at {:?}", output);
+    tracing::info!("Repository built successfully at {:?}", output);
     Ok(())
 }

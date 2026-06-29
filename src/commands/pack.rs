@@ -21,9 +21,9 @@ pub fn pack_plugin(plugin_dir: PathBuf) -> Result<()> {
         .context("Failed to parse Cargo.toml")?;
 
     let plugin_name = cargo_toml.package.name;
-    println!("Found plugin: {}", plugin_name);
+    tracing::info!("Found plugin: {}", plugin_name);
 
-    println!("Building plugin...");
+    tracing::info!("Building plugin...");
     let status = Command::new("cargo")
         .arg("build")
         .arg("--target")
@@ -64,35 +64,35 @@ pub fn pack_plugin(plugin_dir: PathBuf) -> Result<()> {
         .context("Invalid manifest.json format")?;
 
     let output_file = plugin_dir.join(format!("{}.ito", plugin_name));
-    println!("Creating package: {:?}", output_file);
+    tracing::info!("Creating package: {:?}", output_file);
 
     let file = File::create(&output_file)
         .context("Failed to create output file")?;
     let mut zip = zip::ZipWriter::new(file);
     let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
 
-    zip.start_file("main.wasm", options)?;
+    zip.start_file("main.wasm", options).context("Failed to start main.wasm in zip")?;
     let mut wasm_content = Vec::new();
     File::open(&wasm_file)
         .context("Failed to open Wasm file")?
-        .read_to_end(&mut wasm_content)?;
-    zip.write_all(&wasm_content)?;
+        .read_to_end(&mut wasm_content).context("Failed to read wasm content")?;
+    zip.write_all(&wasm_content).context("Failed to write wasm content to zip")?;
 
-    zip.start_file("manifest.json", options)?;
-    zip.write_all(manifest_content.as_bytes())?;
+    zip.start_file("manifest.json", options).context("Failed to start manifest.json in zip")?;
+    zip.write_all(manifest_content.as_bytes()).context("Failed to write manifest content to zip")?;
 
     let icon_file = plugin_dir.join("icon.png");
     if icon_file.exists() {
-        zip.start_file("icon.png", options)?;
+        zip.start_file("icon.png", options).context("Failed to start icon.png in zip")?;
         let mut icon_content = Vec::new();
         File::open(&icon_file)
             .context("Failed to open icon.png")?
-            .read_to_end(&mut icon_content)?;
-        zip.write_all(&icon_content)?;
+            .read_to_end(&mut icon_content).context("Failed to read icon content")?;
+        zip.write_all(&icon_content).context("Failed to write icon content to zip")?;
     }
 
-    zip.finish()?;
+    zip.finish().context("Failed to finish zip file")?;
 
-    println!("Successfully packaged plugin into {}!", output_file.display());
+    tracing::info!("Successfully packaged plugin into {}!", output_file.display());
     Ok(())
 }

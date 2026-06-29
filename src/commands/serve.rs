@@ -7,7 +7,7 @@ pub fn serve_repo(path: PathBuf, port: u16) -> Result<()> {
     }
 
     let addr = format!("0.0.0.0:{}", port);
-    println!("Serving directory {:?} on http://{}", path, addr);
+    tracing::info!("Serving directory {:?} on http://{}", path, addr);
 
     rouille::start_server(addr, move |request| {
         let response = rouille::match_assets(request, &path);

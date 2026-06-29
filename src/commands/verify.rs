@@ -36,6 +36,6 @@ pub fn verify_plugin(path: PathBuf) -> Result<()> {
     let manifest: PluginManifest = serde_json::from_str(&manifest_str)
         .context("Verification failed: Invalid manifest JSON")?;
 
-    println!("Plugin {} v{} verified successfully.", manifest.name, manifest.version);
+    tracing::info!("Plugin {} v{} verified successfully.", manifest.name, manifest.version);
     Ok(())
 }
