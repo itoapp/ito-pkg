@@ -5,7 +5,13 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
-pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, description: &str) -> Result<()> {
+pub fn build_repo(
+    input: PathBuf,
+    output: PathBuf,
+    name: &str,
+    url: &str,
+    description: &str,
+) -> Result<()> {
     if !output.exists() {
         std::fs::create_dir_all(&output).context("Failed to create output directory")?;
     }
@@ -27,7 +33,8 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, descri
 
             let mut file = File::open(&path).context("Failed to open .ito file")?;
             let mut buffer = Vec::new();
-            file.read_to_end(&mut buffer).context("Failed to read .ito file")?;
+            file.read_to_end(&mut buffer)
+                .context("Failed to read .ito file")?;
 
             // Hash the .ito file
             let mut hasher = Sha256::new();
@@ -54,7 +61,9 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, descri
                     }
                 };
                 let mut s = String::new();
-                manifest_file.read_to_string(&mut s).context("Failed to read manifest.json")?;
+                manifest_file
+                    .read_to_string(&mut s)
+                    .context("Failed to read manifest.json")?;
                 match serde_json::from_str(&s) {
                     Ok(m) => m,
                     Err(e) => {
@@ -72,8 +81,10 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, descri
             if let Ok(mut icon_file) = archive.by_name("icon.png") {
                 let icon_filename = format!("{}-v{}.png", manifest.id, manifest.version);
                 let dest_icon_path = icons_dir.join(&icon_filename);
-                let mut out_icon = File::create(&dest_icon_path).context("Failed to create icon file")?;
-                std::io::copy(&mut icon_file, &mut out_icon).context("Failed to copy icon content")?;
+                let mut out_icon =
+                    File::create(&dest_icon_path).context("Failed to create icon file")?;
+                std::io::copy(&mut icon_file, &mut out_icon)
+                    .context("Failed to copy icon content")?;
                 icon_url = Some(format!("icons/{}", icon_filename));
             }
 
@@ -85,7 +96,10 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, descri
                 download_url: format!("packages/{}", pkg_filename),
                 icon_url,
                 sha256: sha256_hash,
-                plugin_type: manifest.plugin_type,
+                plugin_type: manifest.plugin_type.clone(),
+                archived: manifest.archived,
+                archived_reason: manifest.archived_reason.clone(),
+                archived_date: manifest.archived_date.clone(),
             });
         }
     }
@@ -100,12 +114,17 @@ pub fn build_repo(input: PathBuf, output: PathBuf, name: &str, url: &str, descri
     let index_path = output.join("index.json");
     let mut index_file = File::create(&index_path).context("Failed to create index.json")?;
     let index_json = serde_json::to_string_pretty(&index).context("Failed to serialize index")?;
-    index_file.write_all(index_json.as_bytes()).context("Failed to write index.json")?;
+    index_file
+        .write_all(index_json.as_bytes())
+        .context("Failed to write index.json")?;
 
     let min_index_path = output.join("index.min.json");
-    let mut min_index_file = File::create(&min_index_path).context("Failed to create index.min.json")?;
+    let mut min_index_file =
+        File::create(&min_index_path).context("Failed to create index.min.json")?;
     let min_index_json = serde_json::to_string(&index).context("Failed to serialize min index")?;
-    min_index_file.write_all(min_index_json.as_bytes()).context("Failed to write index.min.json")?;
+    min_index_file
+        .write_all(min_index_json.as_bytes())
+        .context("Failed to write index.min.json")?;
 
     tracing::info!("Repository built successfully at {:?}", output);
     Ok(())

@@ -1,5 +1,5 @@
 use crate::models::PluginManifest;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -16,7 +16,9 @@ pub fn verify_plugin(path: PathBuf) -> Result<()> {
     let mut has_wasm = false;
 
     for i in 0..archive.len() {
-        let file = archive.by_index(i).context("Failed to access file in archive")?;
+        let file = archive
+            .by_index(i)
+            .context("Failed to access file in archive")?;
         match file.name() {
             "manifest.json" => has_manifest = true,
             "main.wasm" => has_wasm = true,
@@ -29,13 +31,21 @@ pub fn verify_plugin(path: PathBuf) -> Result<()> {
     }
 
     // Read manifest
-    let mut manifest_file = archive.by_name("manifest.json").context("Failed to open manifest.json inside archive")?;
+    let mut manifest_file = archive
+        .by_name("manifest.json")
+        .context("Failed to open manifest.json inside archive")?;
     let mut manifest_str = String::new();
-    manifest_file.read_to_string(&mut manifest_str).context("Failed to read manifest.json")?;
+    manifest_file
+        .read_to_string(&mut manifest_str)
+        .context("Failed to read manifest.json")?;
 
     let manifest: PluginManifest = serde_json::from_str(&manifest_str)
         .context("Verification failed: Invalid manifest JSON")?;
 
-    tracing::info!("Plugin {} v{} verified successfully.", manifest.name, manifest.version);
+    tracing::info!(
+        "Plugin {} v{} verified successfully.",
+        manifest.name,
+        manifest.version
+    );
     Ok(())
 }

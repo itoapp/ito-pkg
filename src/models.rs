@@ -29,6 +29,9 @@ pub struct PluginManifest {
     pub author: Option<String>,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
+    pub archived: Option<bool>,
+    pub archived_reason: Option<String>,
+    pub archived_date: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -42,6 +45,9 @@ pub struct RepoPackage {
     pub sha256: String,
     #[serde(rename = "type")]
     pub plugin_type: String,
+    pub archived: Option<bool>,
+    pub archived_reason: Option<String>,
+    pub archived_date: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
